@@ -1,4 +1,4 @@
-/* App.jsx — full page with Hero, About, Newsletter, Projects, Footer */
+/* App.jsx — full page with Hero, About, Newsletter, Projects, Footer (no-crop images + fixed newsletter fetch) */
 import React, { useState } from "react";
 import { MapPin, Linkedin, Mail, Check } from "lucide-react";
 import "./index.css";
@@ -85,7 +85,8 @@ function NewsletterForm() {
       const payload = { email, timestamp: new Date().toISOString() };
       const res = await fetch(SHEETS_WEBAPP_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        // IMPORTANT: avoid CORS preflight by using text/plain (Apps Script reads postData.contents)
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(payload),
       });
       const json = await res.json();
@@ -216,8 +217,15 @@ export default function App() {
               <p className="text-neutral-700 mb-3">{p.simple}</p>
               <p className="text-neutral-700 leading-relaxed">{p.description}</p>
             </div>
-            <div className="w-full h-48 md:h-64 bg-neutral-100 flex items-center justify-center text-neutral-400 rounded overflow-hidden">
-              <img src={p.image} alt={p.name} className="h-full w-full object-cover" />
+
+            {/* Image: fit (no crop), with a subtle frame */}
+            <div className="w-full rounded-xl overflow-hidden border border-neutral-200 p-2 md:p-3 bg-white">
+              <img
+                src={p.image}
+                alt={p.name}
+                className="w-full h-auto object-contain max-h-80 md:max-h-96"
+                loading="lazy"
+              />
             </div>
           </div>
         ))}
